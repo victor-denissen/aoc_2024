@@ -24,6 +24,42 @@ enum	type
 	NA
 };
 
+
+int checkSafe(std::vector<int> numbers)
+{
+	type t = NA;
+	int pre = -1;
+	for (std::vector<int>::iterator it = numbers.begin(); it != numbers.end(); it++)
+	{
+		if (pre == -1)
+		{
+			pre = *it;
+			continue;
+		}
+		if (pre == *it)
+			return 0;
+		if (t == NA)
+		{
+			if (*it > pre)
+				t = ASCENDING;
+			else if (*it < pre)
+				t = DESCENDING;
+			else
+				return 0;
+		}
+		if (t == ASCENDING)
+			if (*it < pre)
+				return 0;
+		if (t == DESCENDING)
+			if (*it > pre)
+				return 0;
+		if (abs(pre - *it) > 3)
+			return 0;
+		pre = *it;
+	}
+	return (1);
+}
+
 void	part1()
 {
 	std::ifstream input;
@@ -32,47 +68,40 @@ void	part1()
 		return ;
 	std::string line;
 	int result = 0;
-start:
 	while (getline(input, line))
 	{
-		type t = NA;
-		int pre = -1;
 		std::vector<int> numbers = splitIntoWords(line);
-		std::cout << "line:\t" << line << std::endl;
-		std::cout << "numb:\t";
-		for (int i: numbers)
-			std::cout << i << " ";
-		std::cout << std::endl;
-		for (std::vector<int>::iterator it = numbers.begin(); it != numbers.end(); it++)
-		{
-			if (pre == -1)
-			{
-				pre = *it;
-				continue;
-			}
-			if (pre == *it)
-				goto start;
-			if (t == NA)
-			{
-				if (*it > pre)
-					t = ASCENDING;
-				else if (*it < pre)
-					t = DESCENDING;
-				else
-					goto start;
-			}
-			if (t == ASCENDING)
-				if (*it < pre)
-					goto start;
-			if (t == DESCENDING)
-				if (*it > pre)
-					goto start;
-			if (abs(pre - *it) > 3)
-				goto start;
-			pre = *it;
-		}
-		std::cout << "Upping result\n";
-		result++;
+		result += checkSafe(numbers);
+	}
+	std::cout << result;
+}
+
+int	checkSafe2(std::vector<int> numbers)
+{
+	if (checkSafe(numbers))
+		return 1;
+	for (int i = 0; i < numbers.size(); i++)
+	{
+		std::vector<int> copy(numbers);
+		copy.erase(copy.begin() + i);
+		if (checkSafe(copy))
+			return (1);
+	}
+	return 0;
+}
+
+void	part2()
+{
+	std::ifstream input;
+	input.open("input");
+	if (!input.is_open())
+		return ;
+	std::string line;
+	int result = 0;
+	while (getline(input, line))
+	{
+		std::vector<int> numbers = splitIntoWords(line);
+		result += checkSafe2(numbers);
 	}
 	std::cout << result;
 
@@ -80,6 +109,8 @@ start:
 
 int	main(void)
 {
+	// part1();
+	part2();
 	return (0);
 }
 

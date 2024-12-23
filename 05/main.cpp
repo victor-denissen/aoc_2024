@@ -87,13 +87,66 @@ void	part1(string file = "input")
 	cout << result;
 }
 
+void	fixEm(vector<int> & numbers, vector<pair<int, int>> pairs, string & line)
+{
+again:
+	while (checkLine(numbers, pairs, line))
+	{
+		for (auto it = numbers.begin(); it != numbers.end(); it++)
+		{
+			int n = *it;
+			for (auto p: pairs)
+			{
+				int second = p.second;
+				if (second != n)
+					continue ;
+				auto copy = it;
+				for (; copy != numbers.end(); copy++)
+					if (*copy == p.first)
+					{
+						iter_swap(copy, it);
+						goto again;
+					}
+			}
+		}
+	}
+}
+
+void	part2(string file = "input")
+{
+	ifstream input;
+	input.open(file);
+	if (!input.is_open())
+		return ;
+	string line;
+	int result = 0;
+	vector<pair<int, int>> pairs;
+	while (getline(input, line))
+	{
+		if (insertInstruction(pairs, line)) // This indicates that the given line was no longer an instructions
+			break;
+	}
+	while (getline(input, line))
+	{
+		replace(line.begin(), line.end(), ',', ' ');
+		vector<int> numbers = splitIntoWords(line);
+		if (checkLine(numbers, pairs, line))
+		{
+			fixEm(numbers, pairs, line);
+			result += numbers.at(numbers.size()/2);
+		}
+
+	}
+	cout << result;
+}
+
 
 int main(int argc, char **argv)
 {
 	if (argc == 2)
-		part1(argv[1]);
+		part2(argv[1]);
 	else
-		part1();
+		part2();
 	return (0);
 }
 // Read instructions

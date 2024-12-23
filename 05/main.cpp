@@ -24,6 +24,7 @@ vector<int> splitIntoWords(const string& sentence) {
 int	checkLine(vector<int> & numbers, const vector<pair<int, int>> & pairs, const string & line)
 {
 	vector<int>::iterator it;
+	bool result = false;
 	for (it = numbers.begin(); it != numbers.end(); it++)
 	{
 		int n = *it;
@@ -36,12 +37,12 @@ int	checkLine(vector<int> & numbers, const vector<pair<int, int>> & pairs, const
 			for (; copy != numbers.end(); copy++)
 				if (*copy == p.first)
 				{
+					result = true;
 					cout << line << RED << " Failed. Reason: " << p.first << "|" << p.second << RESET << endl;
-					return 1;
 				}
 		}
 	}
-	return (0);
+	return (result);
 }
 
 int	insertInstruction(vector<pair<int, int>> & pairs, string line)

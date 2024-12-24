@@ -125,17 +125,20 @@ void	printMap(char ** map, int size)
 	cout << RESET << endl;
 }
 
-void	part1(string file = "input")
+char **	part1(string file = "input")
 {
 	int size;
 	int result = 0;
 	char ** map = readFile(&size, file);
 	if (!map)
-		return ;
+		return NULL;
 	pair<int, int> coords(-1, -1);
 	findGuard(map, coords, size);
 	if (coords.first == -1)
-		return (void(cout << RED << "No guard found" << endl << RESET));
+	{
+		return (NULL);
+			cout << RED << "No guard found" << endl << RESET;
+	}
 	try {
 		while (!moveGuard(map, coords, size))
 			// printMap(map, size)
@@ -150,8 +153,9 @@ void	part1(string file = "input")
 		for (int j = 0; j < strlen(map[i]); j++)
 			if (map[i][j] == 'X')
 				result++;
-	printMap(map, size);
+	/* printMap(map, size); */
 	cout << BRIGHT_GREEN << result << RESET << endl;
+	return map;
 }
 
 char **	copyMap(char **map, int size)
@@ -171,37 +175,33 @@ char **	copyMap(char **map, int size)
 	return copy;
 }
 
-pair<pair<int, int>, char> createPosition(char ** map, int size)
+void	createPosition(int positions[130][130], int size, char ** map, pair<int, int> coords)
 {
-	pair<int, int> newCoords;
-	findGuard(map, newCoords, size);
-	char c = map[newCoords.first][newCoords.second];
-	pair<pair<int, int>, char> newPos(newCoords, c);
-	return newPos;
+	positions[coords.first][coords.second] *= map[coords.first][coords.second];
 }
 
-bool	checkDuplicatePosition(vector<pair<pair<int, int>, char>> positions, pair<pair<int, int>, char> newPos)
+bool	checkDuplicatePosition(int check[130][130], char ** map, pair<int, int> coords)
 {
-	for (pair<pair<int, int>, char> p: positions)
-		if (p == newPos)
-			return true;
+	if (check[coords.first][coords.second] % map[coords.first][coords.second] == 0)
+		return true;
 	return false;
 }
 
 int	checkIfLoop(char ** map, int size, pair<int, int> guard)
 {
-	vector<pair<pair<int, int>, char>> positions;
-	auto newPos = createPosition(map, size);
-	positions.push_back(newPos);
+	int	check[130][130];
+	for (int i = 0; i < 130; i++)
+		for (int j = 0; j < 130; j++)
+			check[i][j] = 1;
+	createPosition(check, size, map, guard);
 	while (!moveGuard(map, guard , size))
 	{
-		newPos = createPosition(map, size);
-		if (checkDuplicatePosition(positions, newPos))
+		if (checkDuplicatePosition(check, map, guard))
 		{
 			printMap(map, size);
 			return 1;
 		}
-		positions.push_back(newPos);
+	createPosition(check, size, map, guard);
 	}
 	return 0;
 }
@@ -210,25 +210,29 @@ int	part2solution(char ** map, int size, pair<int,int> guard)
 {
 	int result = 0;
 	pair<int, int> obs(0, 0);
+	/* char ** baseCompletion = part1(); */
+	char ** copy = copyMap(map, size);
 	for (int i = 0; i < size; i++)
 	{
 		obs.second = 0;
 		for (int j = 0; j < strlen(map[i]); j++, obs.second++)
 		{
-			char ** copy = copyMap(map, size);
+			for (int i = 0; i < 130; i++)
+				for (int j = 0; j < 130; j++)
+					copy[i][j] = map[i][j];
+
 			if (copy[obs.first][obs.second] == '.')
 				copy[obs.first][obs.second] = '#';
 			else
 			{
-				freeArray(copy, size);
 				continue ;
 			}
 			cout << "Testing: " << obs.first << ", " << obs.second << endl;
 			result += checkIfLoop(copy, size, guard);
-			freeArray(copy, size);
 		}
 		obs.first++;
 	}
+	freeArray(copy, size);
 	return (result);
 }
 
@@ -251,7 +255,7 @@ int	main(int argc, char **argv)
 	if (argc == 2)
 		part2(argv[1]);
 	else
-		part1();
+		part2();
 	return (0);
 }
 

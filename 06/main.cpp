@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -175,12 +176,12 @@ char **	copyMap(char **map, int size)
 	return copy;
 }
 
-void	createPosition(int positions[130][130], int size, char ** map, pair<int, int> coords)
+void	createPosition(int ** positions, int size, char ** map, pair<int, int> coords)
 {
 	positions[coords.first][coords.second] *= map[coords.first][coords.second];
 }
 
-bool	checkDuplicatePosition(int check[130][130], char ** map, pair<int, int> coords)
+bool	checkDuplicatePosition(int ** check, char ** map, pair<int, int> coords)
 {
 	if (check[coords.first][coords.second] % map[coords.first][coords.second] == 0)
 		return true;
@@ -189,9 +190,22 @@ bool	checkDuplicatePosition(int check[130][130], char ** map, pair<int, int> coo
 
 int	checkIfLoop(char ** map, int size, pair<int, int> guard)
 {
-	int	check[130][130];
-	for (int i = 0; i < 130; i++)
-		for (int j = 0; j < 130; j++)
+	int ** check = (int **)calloc(size, sizeof(int*));
+	if (!check)
+		throw runtime_error("Malloc failed for check");
+	for (int i = 0; i < size; i++)
+	{
+		check[i] = (int *)calloc(size, sizeof(int));
+		if (!check[i]){
+			--i;
+			for (;i >0; --i)
+				free(check[i]);
+			free(check);
+			throw runtime_error("Malloc failed for check");
+		}
+	}
+	for (int i = 0; i < size; i++)
+		for (int j = 0; j < size; j++)
 			check[i][j] = 1;
 	createPosition(check, size, map, guard);
 	while (!moveGuard(map, guard , size))
@@ -206,22 +220,22 @@ int	checkIfLoop(char ** map, int size, pair<int, int> guard)
 	return 0;
 }
 
-int	part2solution(char ** map, int size, pair<int,int> guard)
+int	part2solution(char ** map, int size, pair<int,int> guard, string file)
 {
 	int result = 0;
 	pair<int, int> obs(0, 0);
-	/* char ** baseCompletion = part1(); */
+	char ** baseCompletion = part1(file);
 	char ** copy = copyMap(map, size);
 	for (int i = 0; i < size; i++)
 	{
 		obs.second = 0;
 		for (int j = 0; j < strlen(map[i]); j++, obs.second++)
 		{
-			for (int i = 0; i < 130; i++)
-				for (int j = 0; j < 130; j++)
+			for (int i = 0; i < size; i++)
+				for (int j = 0; j < size; j++)
 					copy[i][j] = map[i][j];
 
-			if (copy[obs.first][obs.second] == '.')
+			if (copy[obs.first][obs.second] == '.' && baseCompletion[obs.first][obs.second] == 'X')
 				copy[obs.first][obs.second] = '#';
 			else
 			{
@@ -247,15 +261,20 @@ void	part2(string file = "input")
 	if (guard.first == -1)
 		return (void(cout << RED << "No guard found" << endl << RESET));
 
-	cout << BRIGHT_GREEN << part2solution(map, size, guard) << RESET << endl;
+	cout << BRIGHT_GREEN << part2solution(map, size, guard, file) << RESET << endl;
 }
 
 int	main(int argc, char **argv)
 {
+	clock_t start, end;
+	double time;
+	start = clock();
 	if (argc == 2)
 		part2(argv[1]);
 	else
 		part2();
+	end = clock();
+	cout << "Time used: " << (end-start) / CLOCKS_PER_SEC << endl;
 	return (0);
 }
 

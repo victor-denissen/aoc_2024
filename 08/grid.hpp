@@ -33,6 +33,57 @@ class	grid
 		void	insertAll(T);
 		void	insertString(std::string, size_t);
 
+		// Iterator
+		class iterator
+		{
+			public:
+				using iterator_category = std::forward_iterator_tag; // Single-pass traversal
+				using value_type = T;                                // The type of elements
+				using difference_type = std::ptrdiff_t;              // For pointer arithmetic
+				using pointer = T*;                                  // Type of a pointer to the value
+				using reference = T&;                                // Type of a reference to the value
+
+			public:
+				iterator(T ** grid, int x, int y, int size_x, int size_y):_grid(grid), _x(x), _y(y), _size_x(size_x), _size_y(size_y){}
+				T & operator*(){ return _grid[_y][_x];}
+
+				iterator& operator++(){
+					_x++;
+					if (_x >= _size_x)
+					{
+						_x = 0;
+						_y++;
+					}
+					return *this;
+				}
+				iterator operator++(int){
+					iterator temp = *this;
+					++(*this);
+					return temp;
+				}
+				bool operator==(const iterator& other) const {
+					return _grid == other._grid && _x == other._x && _y == other._y;
+				}
+
+				bool operator!=(const iterator& other) const {
+					return !(*this == other);
+				}
+				std::pair<int, int>	getCoords(){return {_y, _x};}
+
+			private:
+				T ** _grid;
+				size_t	_x, _y;
+				size_t	_size_x, _size_y;
+
+		};
+
+		iterator	begin(){
+			return iterator(_grid, 0, 0, _size_x, _size_y);
+		}
+		iterator	end(){
+			return iterator(_grid, 0, _size_y, _size_x, _size_y);
+		}
+
 	private:
 		T **		_grid;
 		const size_t	_size_y;
@@ -141,7 +192,7 @@ void	grid<T>::insertString(string str, size_t y)
 	if (_outOfYBounds(y))
 		_throwOutOfBounds();
 	if (_outOfXBounds(str.size()))
-		cout <<  "WARNING:" <<  "String is too long, some data will be lost" << endl;
+		cout <<  "WARNING:"  << "String is too long, some data will be lost" << endl;
 	for (int x = 0; x < (str.size() > _size_x? _size_x: str.size()); x++)
 		insert(str[x], y, x);
 	
@@ -157,6 +208,21 @@ ostream& operator<<(ostream & o, const grid<T> & g)
 	{
 		for (int x = 0; x < xSize; ++x)
 			cout << "[" << g.at(y, x) << "]";
+		cout << endl;
+	}
+	return o;
+}
+template <>
+inline ostream& operator<<(ostream & o, const grid<bool> & g)
+{
+	size_t xSize = g.getSizeX();
+	size_t ySize = g.getSizeY();
+	for (int y = 0; y < ySize; ++y)
+	{
+		for (int x = 0; x < xSize; ++x)
+		{
+			cout << "[" << (g.at(y, x) == true ? "\033[32;1m1" : "\033[31;1m0") << "\033[0m]";
+		}
 		cout << endl;
 	}
 	return o;

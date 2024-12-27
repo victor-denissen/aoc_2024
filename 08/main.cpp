@@ -8,7 +8,7 @@
 #include <vector>
 #include "../../grid/include/grid.hpp"
 using namespace std;
-
+#define PART 1
 
 grid<char> *	instatiateMap(string file)
 {
@@ -40,16 +40,20 @@ const	pair<int, int>	add(pair<int, int> thit, pair<int, int> that)
 
 void	insertSol(grid<bool> & sol, const pair<int, int> c1, const pair<int, int> c2)
 {
+	bool part2 = true;
 	auto dir = subtract(c1, c2);
-	auto a1 = add(c1, dir);
-	auto a2 = subtract(c2, dir);
+	auto a1 = subtract(c1, dir);
+	auto a2 = add(c2, dir);
 	try
 	{
+		while (part2){
 		cout << "Trying to place antinode at ";
 		cout << a1.first << ":" << a1.second << endl;
 		sol.at(a1) = '#';
 		cout << GREEN << "Successfull" << endl;
 		cout << a1.first << ":" << a1.second << endl;
+		a1 = subtract(a1, dir);
+		}
 	}
 	catch(out_of_range & e)
 	{
@@ -58,11 +62,14 @@ void	insertSol(grid<bool> & sol, const pair<int, int> c1, const pair<int, int> c
 	}
 	cout << RESET << endl;
 	try{
+		while (part2){
 		cout << "Trying to place antinode at ";
 		cout << a2.first << ":" << a2.second << endl;
 		sol.at(a2) = '#';
 		cout << GREEN << "Successfull" << endl;
 		cout << a2.first << ":" << a2.second << endl;
+		a2 = add(a2, dir);
+		}
 	}
 	catch(out_of_range & e)
 	{
